@@ -4,7 +4,7 @@ from time import sleep, time
 from hashlib import md5
 from json import loads
 from requests import get
-# from traceback import format_exc
+
 
 
 # 功能：调用百度翻译API接口，翻译日语简介

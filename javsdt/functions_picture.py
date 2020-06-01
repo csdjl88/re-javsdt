@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from os import system
 from PIL import Image
+import re
 
 
 # 功能：查看图片能否打开，有没有这个图片、是不是完好、没有损坏的图片
@@ -53,8 +54,8 @@ def crop_poster_youma(path_fanart, path_poster):
         print('    >poster.jpg裁剪成功')
     else:
         x_left = wf - wide
-        poster = img.crop((x_left, 0, wf, hf))    # poster在fanart的 左上角(x_left, 0)，右下角(x_left + wide, hf)
-        poster.save(path_poster, quality=95)                 # 坐标轴的Y轴是反的
+        poster = img.crop((x_left, 0, wf, hf))  # poster在fanart的 左上角(x_left, 0)，右下角(x_left + wide, hf)
+        poster.save(path_poster, quality=95)  # 坐标轴的Y轴是反的
         print('    >poster.jpg裁剪成功')
 
 
@@ -75,10 +76,10 @@ def crop_poster_default(path_fanart, path_poster, int_pattern):
         x_left = (wf - wide) / int_pattern  # / 2，poster裁剪fanart中间；/ 1，poster裁剪fanart右边。
         # crop
         try:
-            poster = img.crop((x_left, 0, x_left + wide, hf))    # poster在fanart的 左上角(x_left, 0)，右下角(x_left + wide, hf)
+            poster = img.crop((x_left, 0, x_left + wide, hf))  # poster在fanart的 左上角(x_left, 0)，右下角(x_left + wide, hf)
         except:
             raise
-        poster.save(path_poster, quality=95)                 # 坐标轴的Y轴是反的
+        poster.save(path_poster, quality=95)  # 坐标轴的Y轴是反的
         print('    >poster.jpg裁剪成功')
 
 
@@ -107,8 +108,8 @@ def crop_poster_baidu(path_fanart, path_poster, client):
         else:  # 不会超出poster
             x_left = x_nose - wide_half  # 以鼻子为中心向两边扩展
         # crop
-        poster = img.crop((x_left, 0, x_left + wide, hf))    # poster在fanart的 左上角(x_left, 0)，右下角(x_left + wide, hf)，
-        poster.save(path_poster, quality=95)                 # 坐标轴的Y轴是反的
+        poster = img.crop((x_left, 0, x_left + wide, hf))  # poster在fanart的 左上角(x_left, 0)，右下角(x_left + wide, hf)，
+        poster.save(path_poster, quality=95)  # 坐标轴的Y轴是反的
         print('    >poster.jpg裁剪成功')
 
 
@@ -119,11 +120,11 @@ def crop_poster_baidu(path_fanart, path_poster, client):
 def add_watermark_subt(path_poster):
     # 打开poster，“中文字幕”条幅的宽高是poster的宽的四分之一
     img_poster = Image.open(path_poster)
-    scroll_wide = int(img_poster.height/4)
+    scroll_wide = int(img_poster.height / 4)
     # 打开“中文字幕”条幅，缩小到合适poster的尺寸
     img_subt = Image.open('subt.png')
     img_subt = img_subt.resize((scroll_wide, scroll_wide), Image.ANTIALIAS)
-    r, g, b, a = img_subt.split()    # 获取颜色通道，保持png的透明性
+    r, g, b, a = img_subt.split()  # 获取颜色通道，保持png的透明性
     # 条幅在poster上摆放的位置。左上角（0，0）
     img_poster.paste(img_subt, (0, 0), mask=a)
     img_poster.save(path_poster, quality=95)
@@ -138,13 +139,20 @@ def add_watermark_divulge(path_poster):
     # 打开poster，条幅的宽高是poster的宽的四分之一
     img_poster = Image.open(path_poster)
     w, h = img_poster.size
-    scroll_wide = int(h/4)
+    scroll_wide = int(h / 4)
     # 打开条幅，缩小到合适poster的尺寸
     img_divulge = Image.open('divulge.png')
     img_divulge = img_divulge.resize((scroll_wide, scroll_wide), Image.ANTIALIAS)
-    r, g, b, a = img_divulge.split()    # 获取颜色通道，保持png的透明性
+    r, g, b, a = img_divulge.split()  # 获取颜色通道，保持png的透明性
     # 条幅在poster上摆放的位置。左上角（x_left，0）
     x_left = w - scroll_wide
     img_poster.paste(img_divulge, (x_left, 0), mask=a)
     img_poster.save(path_poster, quality=95)
     print('    >poster加上无码流出红幅')
+
+
+def contains_http_or_https(s):
+    # 正则表达式匹配 http 或 https
+    pattern = re.compile(r'https?://')
+    # search方法会在字符串中搜索模式的第一个位置
+    return pattern.search(s) is not None

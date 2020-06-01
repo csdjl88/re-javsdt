@@ -19,7 +19,7 @@ try:
     config_settings.set("重命名影片", "重命名影片的格式", "车牌+空格+标题")
     config_settings.add_section("修改文件夹")
     config_settings.set("修改文件夹", "是否重命名或创建独立文件夹？", "是")
-    config_settings.set("修改文件夹", "新文件夹的格式", "【+全部演员+】+车牌")
+    config_settings.set("修改文件夹", "新文件夹的格式", "车牌+【+全部演员+】")
     config_settings.add_section("归类影片")
     config_settings.set("归类影片", "是否归类影片？", "否")
     config_settings.set("归类影片", "针对文件还是文件夹？", "文件夹")
