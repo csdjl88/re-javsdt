@@ -515,8 +515,25 @@ while input_start_key == '':
                 # 正则匹配 影片信息 开始！
                 # title的开头是车牌号，想要后面的纯标题
                 car_titleg = search(r'(.+?) (.+)', title)
+
+                lan = ''
+                # 处理原文件名包含特定后缀的情况: _c,_C.-c,-C,_u,_U,-u,-U,_uc,_UC,-uc,-UC
+                # 统一替换为 -C, -UC, 或 -U
+                original_filename = jav_name
+                # 检查原文件名是否包含这些后缀（不区分大小写）
+                suffix_patterns = [
+                    (r'[_\-][uU][cC][_\-\.\s]', '-UC'),  # 匹配包含_uc, -uc, _UC, -UC等情况
+                    (r'[_\-][cC][_\-\.\s]', '-C'),  # 匹配包含_c, -c, _C, -C等情况
+                    (r'[_\-][uU][_\-\.\s]', '-U')  # 匹配包含_u, -u, _U, -U等情况
+                ]
+                for pattern, replacement in suffix_patterns:
+                    # 检查文件名中是否包含这些后缀（不在结尾也可以）
+                    if re.search(pattern, original_filename + '_'):
+                        lan += replacement
+                        break
                 # 车牌号
-                dict_nfo['车牌'] = jav_num = car_titleg.group(1)
+                jav_num = car_titleg.group(1)
+                dict_nfo['车牌'] = jav_num + lan
                 dict_nfo['车牌前缀'] = jav_num.split('-')[0]
                 dict_nfo['首字母'] = jav_num[0]
                 # 给用户重命名用的标题是“短标题”，nfo中是“完整标题”，但用户在ini中只用写“标题”
@@ -623,7 +640,7 @@ while input_start_key == '':
                             record_fail('    >第' + str(num_fail) + '个失败！翻译简介失败：' + path_relative + '\n')
                     # 去除xml文档不允许的特殊字符 &<>  \/:*?"<>|
                     plot = replace_xml(plot)
-                    print(plot)
+                    # print(plot)
                 else:
                     plot = ''
                 #######################################################################
@@ -646,9 +663,11 @@ while input_start_key == '':
                     for j in list_rename_video:
                         jav_name += dict_nfo[j]
                     jav_name = jav_name.rstrip() + str_cd  # 【发生变化】jav_name  去除末尾空格，否则windows会自动删除空格，导致程序仍以为带空格
+
                     # 新的完整文件名，新的路径
                     dict_nfo['视频'] = jav_name  # 【发生变化】 dict_nfo['视频']
                     jav_file = jav_name + video_type  # 【发生变化】jav_file，下面可能重命名视频不成功，但仍然围绕成功的jav_file来命名
+
                     path_jav_new = root_now + sep + jav_file  # 【临时变量】path_jav_new 新路径
                     # 理想状态下，还不存在目标同名文件
                     if not exists(path_jav_new):

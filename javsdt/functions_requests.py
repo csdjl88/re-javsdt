@@ -1,11 +1,12 @@
 # -*- coding:utf-8 -*-
+import os
 from os import system
 from re import search, findall
 from time import sleep
 from requests import Session, get, post
 from PIL import Image
 from cloudscraper import get_cookie_string
-
+from urllib.request import urlretrieve
 
 
 # 功能：请求各大jav网站和arzon的网页
@@ -17,23 +18,26 @@ from cloudscraper import get_cookie_string
 # 获取一个arzon_cookie，返回cookie
 def steal_arzon_cookies(proxy):
     print('\n正在尝试通过 https://www.arzon.jp 的成人验证...')
+    response = ''
     for retry in range(10):
         try:  # 当初费尽心机，想办法如何通过页面上的成人验证，结果在一个C#开发的jav爬虫项目，看到它请求以下网址，再跳转到arzon主页，所得到的的cookie即是合法的cookie
             if proxy:
                 session = Session()
-                session.get(
+                response = session.get(
                     'https://www.arzon.jp/index.php?action=adult_customer_agecheck&agecheck=1&redirect=https%3A%2F%2Fwww.arzon.jp%2F',
-                    proxies=proxy, timeout=(6, 7))
+                    proxies=proxy, timeout=(20, 30))
+
                 print('通过arzon的成人验证！\n')
                 return session.cookies.get_dict()
             else:
                 session = Session()
-                session.get(
+                response = session.get(
                     'https://www.arzon.jp/index.php?action=adult_customer_agecheck&agecheck=1&redirect=https%3A%2F%2Fwww.arzon.jp%2F',
-                    timeout=(6, 7))
+                    timeout=(20, 30))
                 print('通过arzon的成人验证！\n')
                 return session.cookies.get_dict()
         except:
+            print(response)
             # print(format_exc())
             print('通过失败，重新尝试...')
             continue
@@ -114,20 +118,25 @@ def find_plot_arzon(jav_num, acook, proxy_arzon):
 
 #################################################### javlibrary ########################################################
 # 获取一个library_cookie，返回cookie
-def steal_library_header(url, proxy):
+def steal_library_header(url, proxy,cookie):
     print('\n正在尝试通过', url, '的5秒检测...如果超过20秒卡住...重启程序...')
-    for retry in range(10):
-        try:
-            if proxy:
-                cookie_value, user_agent = get_cookie_string(url, proxies=proxy, timeout=15)
-            else:
-                cookie_value, user_agent = get_cookie_string(url, timeout=15)
-            print('通过5秒检测！\n')
-            return {'User-Agent': user_agent, 'Cookie': cookie_value}
-        except:
-            # print(format_exc())
-            print('通过失败，重新尝试...')
-            continue
+    # for retry in range(10):
+    #     try:
+    #         if proxy:
+    #             cookie_value, user_agent = get_cookie_string(url, proxies={'https': proxy.get('https')}, timeout=60)
+    #         else:
+    #             cookie_value, user_agent = get_cookie_string(url, timeout=15)
+    #         print('通过5秒检测！\n')
+    #         return {'User-Agent': user_agent, 'Cookie': cookie}
+    #     except:
+    #         # print(format_exc())
+    #         print('通过失败，重新尝试...')
+    #         continue
+    #
+    return {
+        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+        'Cookie': cookie,
+    }
     print('>>通过javlibrary的5秒检测失败：', url)
     system('pause')
 
@@ -137,9 +146,11 @@ def get_library_html(url, header, proxy):
     for retry in range(10):
         try:
             if proxy:
-                rqs = get(url, headers=header, proxies=proxy, timeout=(6, 7), allow_redirects=False)
+                rqs = get(url, headers=header, proxies={
+                    'https': proxy.get('https')
+                }, timeout=(20, 60), allow_redirects=False)
             else:
-                rqs = get(url, headers=header, timeout=(6, 7), allow_redirects=False)
+                rqs = get(url, headers=header, timeout=(20, 60), allow_redirects=False)
         except:
             print('    >打开网页失败，重新尝试...')
             continue
@@ -175,9 +186,9 @@ def get_bus_html(url, proxy, Cookie):
     for retry in range(10):
         try:
             if proxy:  # existmag=all为了 获得所有影片，而不是默认的有磁力的链接
-                rqs = get(url, proxies=proxy, timeout=(6, 7), headers=headers)
+                rqs = get(url, proxies=proxy, timeout=(20, 30), headers=headers)
             else:
-                rqs = get(url, timeout=(6, 7), headers=headers)
+                rqs = get(url, timeout=(20, 30), headers=headers)
         except:
             # print(format_exc())
             print('    >打开网页失败，重新尝试...')

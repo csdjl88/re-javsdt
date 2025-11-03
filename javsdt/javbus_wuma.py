@@ -548,12 +548,12 @@ while input_start_key == '':
                     dict_nfo['片商'] = '无码片商'
                     studio = ''
                 # 系列:</span> <a href="https://www.cdnbus.work/series/kpl">悪質シロウトナンパ</a>
-                seriesg = search(r'系列:</span> <a href=".+?">(.+?)</a>', html_web)  # 封面图片的正则对象
-                if str(seriesg) != 'None':
-                    dict_nfo['系列'] = series = seriesg.group(1)
-                else:
-                    dict_nfo['系列'] = '无码系列'
-                    series = ''
+                # seriesg = search(r'系列:</span> <a href=".+?">(.+?)</a>', html_web)  # 封面图片的正则对象
+                # if str(seriesg) != 'None':
+                #     dict_nfo['系列'] = series = seriesg.group(1)
+                # else:
+                dict_nfo['系列'] = '无码系列'
+                series = ''
                 # print('系列', series)
                 # 演员们 和 # 第一个演员
                 actors = findall(r'star/.+?"><img src=.+?" title="(.+?)">', html_web)

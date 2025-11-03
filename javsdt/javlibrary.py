@@ -510,23 +510,25 @@ while input_start_key == '':
                 ################################################################################
                 # 去arzon找简介
                 if bool_nfo and bool_plot and jav_epi == 1:
-                    plot, status_arzon, acook = find_plot_arzon(jav_num, acook, proxy_arzon)
-                    if status_arzon == 0:
-                        pass
-                    elif status_arzon == 1:
-                        num_warn += 1
-                        record_warn('    >第' + str(num_warn) + '个失败！找不到简介，尽管arzon上有搜索结果：' + path_relative + '\n')
-                    else:
-                        num_warn += 1
-                        record_warn('    >第' + str(num_warn) + '个失败！找不到简介，影片被arzon下架：' + path_relative + '\n')
-                    # 需要翻译简介
-                    if bool_tran:
-                        plot = tran_plot(tran_id, tran_sk, plot, to_language)
-                        if plot.startswith('【百度'):
-                            num_fail += 1
-                            record_fail('    >第' + str(num_fail) + '个失败！翻译简介失败：' + path_relative + '\n')
-                    # 去除xml文档不允许的特殊字符 &<>  \/:*?"<>|
-                    plot = replace_xml(plot)
+                    pass
+                    plot = ''
+                    # plot, status_arzon, acook = find_plot_arzon(jav_num, acook, proxy_arzon)
+                    # if status_arzon == 0:
+                    #     pass
+                    # elif status_arzon == 1:
+                    #     num_warn += 1
+                    #     record_warn('    >第' + str(num_warn) + '个失败！找不到简介，尽管arzon上有搜索结果：' + path_relative + '\n')
+                    # else:
+                    #     num_warn += 1
+                    #     record_warn('    >第' + str(num_warn) + '个失败！找不到简介，影片被arzon下架：' + path_relative + '\n')
+                    # # 需要翻译简介
+                    # if bool_tran:
+                    #     plot = tran_plot(tran_id, tran_sk, plot, to_language)
+                    #     if plot.startswith('【百度'):
+                    #         num_fail += 1
+                    #         record_fail('    >第' + str(num_fail) + '个失败！翻译简介失败：' + path_relative + '\n')
+                    # # 去除xml文档不允许的特殊字符 &<>  \/:*?"<>|
+                    # plot = replace_xml(plot)
                     # print(plot)
                 else:
                     plot = ''
