@@ -440,14 +440,19 @@ def download_pic(url_on_web, url, path, proxy):
     raise Exception('    >下载多次，仍然失败！')
 
 
-def pw_cloudflare_verify_human(css_selector: str, endpoint_url="http://localhost:9222", delay=5):
+def pw_cloudflare_verify_human(
+        css_selector: str,
+        endpoint_url="http://localhost:9222",
+        delay=5):
     sleep(delay)  # 延时启动，目的是等待 Cloudflare 元素加载完成
     with sync_playwright() as p:  # 创建 Playwright 上下文管理器
-        browser = p.chromium.connect_over_cdp(endpoint_url)  # 使用 CDP 协议连接到 Chromium 浏览器
+        browser = p.chromium.connect_over_cdp(
+            endpoint_url)  # 使用 CDP 协议连接到 Chromium 浏览器
         context = browser.contexts[0]  # 获取浏览器中的第一个上下文
         page = context.pages[0]  # 获取上下文中的第一个页面
 
-        cf_div_bounding_box = page.locator(css_selector).bounding_box()  # 使用 CSS 选择器定位元素
+        cf_div_bounding_box = page.locator(
+            css_selector).bounding_box()  # 使用 CSS 选择器定位元素
         x = cf_div_bounding_box['x']  # 元素边界左上角的 X 坐标
         y = cf_div_bounding_box['y']  # 元素边界左上角的 Y 坐标
         width = cf_div_bounding_box['width']  # 元素的宽度（该变量此处用不上）
@@ -457,7 +462,8 @@ def pw_cloudflare_verify_human(css_selector: str, endpoint_url="http://localhost
         page.mouse.click(offset_x, offset_y)
 
 
-def run_browser_with_cdp(browser_path: str = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"):
+def run_browser_with_cdp(
+        browser_path: str = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"):
     """
     此函数用于启动 Chromium 浏览器同时开启 CDP 协议
     :param browser_path: Chromium 浏览器的可执行文件路径
@@ -466,7 +472,8 @@ def run_browser_with_cdp(browser_path: str = r"C:\Program Files (x86)\Microsoft\
     command = [
         browser_path,  # Chromium 浏览器的可执行文件路径
         "--remote-debugging-port=9222",  # 设置 CDP 协议使用的端口
-        f"--user-data-dir={join(dirname(abspath(__file__)), 'user_1')}",  # 将浏览器用户数据保存在当前目录
+        # 将浏览器用户数据保存在当前目录
+        f"--user-data-dir={join(dirname(abspath(__file__)), 'user_1')}",
         "--no-first-run",  # 阻止首次运行的引导界面
         "--disable-sync",  # 禁用浏览器同步功能
         "--disable-extensions",  # 禁用所有扩展程序
@@ -475,4 +482,8 @@ def run_browser_with_cdp(browser_path: str = r"C:\Program Files (x86)\Microsoft\
         "--no-default-browser-check",  # 阻止默认浏览器检查
         "--safebrowsing-disable-auto-update",  # 禁用安全浏览自动更新
     ]
-    return Popen(command, shell=True, stdout=DEVNULL, stderr=DEVNULL)  # 返回进程对象方便后续管理
+    return Popen(
+        command,
+        shell=True,
+        stdout=DEVNULL,
+        stderr=DEVNULL)  # 返回进程对象方便后续管理
