@@ -12,7 +12,7 @@ from functions_preparation import JavFile, choose_directory, check_classify_root
     record_start, record_fail, record_video_old, record_warn
 from functions_process import check_subt_divulge, replace_xml, replace_xml_win
 from functions_picture import check_pic, add_watermark_subt
-from functions_requests import download_pic
+from functions_requests import download_pic, close_browser_with_cdp
 ##########################################################################
 from functions_preparation import check_actors
 from functions_process import find_num_lib, collect_sculpture
@@ -853,7 +853,7 @@ while input_start_key == '':
                 if bool_nfo and jav_epi == 1:
                     if bool_cd_only:
                         path_nfo = root_now + sep + \
-                            jav_name.replace(str_cd, '') + '.nfo'
+                                   jav_name.replace(str_cd, '') + '.nfo'
                     else:
                         path_nfo = root_now + sep + jav_name + '.nfo'
                     title_in_nfo = ''
@@ -1080,4 +1080,5 @@ while input_start_key == '':
     if num_warn > 0:
         print('“警告信息.txt”还记录了', num_warn, '个警告信息！\n')
     # os.system('pause')
+    close_browser_with_cdp()
     input_start_key = input('回车继续选择文件夹整理：')

@@ -485,6 +485,12 @@ def pw_cloudflare_verify_human(
         page.mouse.click(offset_x, offset_y)
 
 
+def close_browser_with_cdp(
+        browser_path: str = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"):
+    # 尝试关闭所有正在运行的 Chromium 浏览器进程
+    Popen(["taskkill", "/F", "/IM", browser_path], shell=True)
+
+
 def run_browser_with_cdp(
         browser_path: str = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"):
     """
@@ -492,8 +498,7 @@ def run_browser_with_cdp(
     :param browser_path: Chromium 浏览器的可执行文件路径
     :return: 返回进程对象方便后续管理
     """
-    # 尝试关闭所有正在运行的 Chromium 浏览器进程
-    Popen(["taskkill", "/F", "/IM", browser_path], shell=True)
+    close_browser_with_cdp()
     command = [
         browser_path,  # Chromium 浏览器的可执行文件路径
         "--remote-debugging-port=9222",  # 设置 CDP 协议使用的端口
@@ -512,6 +517,7 @@ def run_browser_with_cdp(
         shell=True,
         stdout=DEVNULL,
         stderr=DEVNULL)  # 返回进程对象方便后续管理
+
 
 # 打开网页获取cookies
 def pw_cloudflare_trigger_turnstile_page(
