@@ -139,7 +139,6 @@ def steal_library_header(url, proxy, cookie):
             # 示例一 : Cloudflare 登录页
             user_agent, cookie, origin, content = pw_cloudflare_trigger_turnstile_page(
                 url, clearCookies=False)
-            # pw_cloudflare_verify_human(".main-content>div:first-of-type")
             # pw_cloudflare_verify_human("#AOzYg6")  # 登录表单页的人机验证按钮
             # if proxy:
             #     cookie_value, user_agent = get_cookie_string(url, proxies={'https': proxy.get('https')}, timeout=60)
