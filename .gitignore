@@ -9,3 +9,4 @@
 *.pyc
 *.spec
 re_javsdt.egg-info
+/javsdt/user_1
