@@ -7,8 +7,10 @@ from requests import Session, get, post
 from PIL import Image
 from cloudscraper import get_cookie_string
 from urllib.request import urlretrieve
-
-
+from time import sleep
+from playwright.sync_api import sync_playwright
+from os.path import join, abspath, dirname
+from subprocess import Popen, DEVNULL
 # 功能：请求各大jav网站和arzon的网页
 # 参数：网址url，请求头部header/cookies，代理proxy
 # 返回：网页html，请求头部
@@ -128,6 +130,8 @@ def find_plot_arzon(jav_num, acook, proxy_arzon):
 #################################################### javlibrary ##########
 # 获取一个library_cookie，返回cookie
 def steal_library_header(url, proxy, cookie):
+    # C:\Program Files(x86)\Microsoft\Edge\Application\msedge.exe
+
     print('\n正在尝试通过', url, '的5秒检测...如果超过20秒卡住...重启程序...')
     # for retry in range(10):
     #     try:
@@ -434,3 +438,41 @@ def download_pic(url_on_web, url, path, proxy):
             print('    >下载失败，重新下载....')
             continue
     raise Exception('    >下载多次，仍然失败！')
+
+
+def pw_cloudflare_verify_human(css_selector: str, endpoint_url="http://localhost:9222", delay=5):
+    sleep(delay)  # 延时启动，目的是等待 Cloudflare 元素加载完成
+    with sync_playwright() as p:  # 创建 Playwright 上下文管理器
+        browser = p.chromium.connect_over_cdp(endpoint_url)  # 使用 CDP 协议连接到 Chromium 浏览器
+        context = browser.contexts[0]  # 获取浏览器中的第一个上下文
+        page = context.pages[0]  # 获取上下文中的第一个页面
+
+        cf_div_bounding_box = page.locator(css_selector).bounding_box()  # 使用 CSS 选择器定位元素
+        x = cf_div_bounding_box['x']  # 元素边界左上角的 X 坐标
+        y = cf_div_bounding_box['y']  # 元素边界左上角的 Y 坐标
+        width = cf_div_bounding_box['width']  # 元素的宽度（该变量此处用不上）
+        height = cf_div_bounding_box['height']  # 元素的高度
+        offset_x = x + 75  # 以 X 为起点向右偏移 75 像素
+        offset_y = y + (height / 2)  # 以 Y 为起点向下偏移元素高度的一半（元素垂直中心）
+        page.mouse.click(offset_x, offset_y)
+
+
+def run_browser_with_cdp(browser_path: str = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"):
+    """
+    此函数用于启动 Chromium 浏览器同时开启 CDP 协议
+    :param browser_path: Chromium 浏览器的可执行文件路径
+    :return: 返回进程对象方便后续管理
+    """
+    command = [
+        browser_path,  # Chromium 浏览器的可执行文件路径
+        "--remote-debugging-port=9222",  # 设置 CDP 协议使用的端口
+        f"--user-data-dir={join(dirname(abspath(__file__)), 'user_1')}",  # 将浏览器用户数据保存在当前目录
+        "--no-first-run",  # 阻止首次运行的引导界面
+        "--disable-sync",  # 禁用浏览器同步功能
+        "--disable-extensions",  # 禁用所有扩展程序
+        "--disable-infobars",  # 禁用信息栏提示
+        "--disable-background-networking",  # 禁用后台网络连接
+        "--no-default-browser-check",  # 阻止默认浏览器检查
+        "--safebrowsing-disable-auto-update",  # 禁用安全浏览自动更新
+    ]
+    return Popen(command, shell=True, stdout=DEVNULL, stderr=DEVNULL)  # 返回进程对象方便后续管理
