@@ -550,7 +550,7 @@ while input_start_key == '':
                     re.DOTALL).group(1)
                 # DVD封面cover
                 coverg = search(
-                    r'src="(.+?)" width="600',
+                    r'id="video_jacket_img"[^>]*src="([^"]+)"',
                     html_web)  # 封面图片的正则对象
                 if str(coverg) != 'None':
                     url_cover = coverg.group(1)
@@ -599,7 +599,7 @@ while input_start_key == '':
                     if bool_strip_actors and title_only.endswith(
                             dict_nfo['全部演员']):
                         title_only = title_only[:-
-                                                len(dict_nfo['全部演员'])].rstrip()
+                        len(dict_nfo['全部演员'])].rstrip()
                 else:
                     actors = ['有码演员']
                     dict_nfo['首个演员'] = dict_nfo['全部演员'] = '有码演员'
@@ -659,7 +659,7 @@ while input_start_key == '':
                 ###############################################################
                 # 前往javbus查找系列，顺便查找图片url，因为javlibrary引用dmm的图片，晚上下载很慢
                 url_cover_bus, series, status_series = find_series_cover_bus(
-                    jav_num, url_bus, proxy_bus)
+                    jav_num, url_bus, proxy_bus, Cookie)
                 if status_series:
                     num_warn += 1
                     record_warn(
@@ -980,7 +980,7 @@ while input_start_key == '':
                         else:
                             print('    >从dmm下载封面：', url_cover)
                             try:
-                                download_pic(url_cover, path_fanart, proxy_dmm)
+                                download_pic(url_cover, url_cover, path_fanart, proxy_dmm)
                                 print('    >fanart.jpg下载成功')
                             except BaseException:
                                 num_fail += 1

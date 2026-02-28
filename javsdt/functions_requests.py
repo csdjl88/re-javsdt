@@ -11,6 +11,8 @@ from time import sleep
 from playwright.sync_api import sync_playwright
 from os.path import join, abspath, dirname
 from subprocess import Popen, DEVNULL
+
+
 # 功能：请求各大jav网站和arzon的网页
 # 参数：网址url，请求头部header/cookies，代理proxy
 # 返回：网页html，请求头部
@@ -84,7 +86,7 @@ def get_arzon_html(url, cookies, proxy):
 def find_plot_arzon(jav_num, acook, proxy_arzon):
     for retry in range(2):
         url_search_arzon = 'https://www.arzon.jp/itemlist.html?t=&m=all&s=&q=' + \
-            jav_num.replace('-', '')
+                           jav_num.replace('-', '')
         print('    >查找简介：', url_search_arzon)
         # 得到arzon的搜索结果页面
         html_search_arzon = get_arzon_html(
@@ -130,29 +132,43 @@ def find_plot_arzon(jav_num, acook, proxy_arzon):
 #################################################### javlibrary ##########
 # 获取一个library_cookie，返回cookie
 def steal_library_header(url, proxy, cookie):
-    # C:\Program Files(x86)\Microsoft\Edge\Application\msedge.exe
-
     print('\n正在尝试通过', url, '的5秒检测...如果超过20秒卡住...重启程序...')
-    # for retry in range(10):
-    #     try:
-    #         if proxy:
-    #             cookie_value, user_agent = get_cookie_string(url, proxies={'https': proxy.get('https')}, timeout=60)
-    #         else:
-    #             cookie_value, user_agent = get_cookie_string(url, timeout=15)
-    #         print('通过5秒检测！\n')
-    #         return {'User-Agent': user_agent, 'Cookie': cookie}
-    #     except:
-    #         # print(format_exc())
-    #         print('通过失败，重新尝试...')
-    #         continue
-    #
-    return {
-        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
-        'Cookie': cookie,
-        'origin': 'https://www.javlibrary.com',
-        'priority': "u=1, i",
-        ":path": "/cdn-cgi/challenge-platform/h/g/jsd/oneshot/ea2d291c0fdc/0.6067935104803159:1772212279:4aNvNHT_gNUPY9quaeKi-nDxcv_v8Z3vD5k85IAuf5U/9d4973addcc93023"
-    }
+    run_browser_with_cdp()
+    for retry in range(10):
+        try:
+            # 示例一 : Cloudflare 登录页
+            user_agent, cookie, origin, content = pw_cloudflare_trigger_turnstile_page(
+                url, clearCookies=False)
+            # pw_cloudflare_verify_human(".main-content>div:first-of-type")
+            # pw_cloudflare_verify_human("#AOzYg6")  # 登录表单页的人机验证按钮
+            # if proxy:
+            #     cookie_value, user_agent = get_cookie_string(url, proxies={'https': proxy.get('https')}, timeout=60)
+            # else:
+            #     cookie_value, user_agent = get_cookie_string(url, timeout=15)
+            if len(cookie) == 0:
+                user_agent, cookie, origin, content = pw_cloudflare_trigger_turnstile_page(
+                    url, clearCookies=False)
+
+            print('通过5秒检测！\n')
+
+            # 将cookie列表转换为字符串格式
+            cookie_string = '; '.join(
+                [f"{c['name']}={c['value']}" for c in cookie])
+            # 在末尾添加dm=javlibrary; over18=18
+            cookie_string += '; dm=javlibrary; over18=18'
+            return {'User-Agent': user_agent, 'Cookie': cookie_string}
+        except BaseException:
+            # print(format_exc())
+            print('通过失败，重新尝试...')
+            continue
+
+    # return {
+    #     'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    #     'Cookie': cookie,
+    #     'origin': 'https://www.javlibrary.com',
+    #     'priority': "u=1, i",
+    #     ":path": "/cdn-cgi/challenge-platform/h/g/jsd/oneshot/ea2d291c0fdc/0.6067935104803159:1772212279:4aNvNHT_gNUPY9quaeKi-nDxcv_v8Z3vD5k85IAuf5U/9d4973addcc93023"
+    # }
     print('>>通过javlibrary的5秒检测失败：', url)
     system('pause')
 
@@ -160,20 +176,27 @@ def steal_library_header(url, proxy, cookie):
 # 搜索javlibrary，或请求javlibrary上jav所在网页，返回html
 def get_library_html(url, header, proxy):
     for retry in range(10):
-        try:
-            if proxy:
-                rqs = get(url, headers=header, proxies={
-                    'https': proxy.get('https')
-                }, timeout=(20, 60), allow_redirects=False)
-            else:
-                rqs = get(
-                    url, headers=header, timeout=(
-                        20, 60), allow_redirects=False)
-        except BaseException:
-            print('    >打开网页失败，重新尝试...')
-            continue
-        rqs.encoding = 'utf-8'
-        rqs_content = rqs.text
+        # try:
+        #     # pw_cloudflare_verify_human("#adultwarningprompt>p")  #
+        #     # 登录表单页的人机验证按钮
+        #     if proxy:
+        #         rqs = get(url, headers=header, proxies={
+        #             'https': proxy.get('https')
+        #         }, timeout=(20, 60), allow_redirects=False)
+        #     else:
+        #         rqs = get(
+        #             url, headers=header, timeout=(
+        #                 20, 60), allow_redirects=False)
+        # except BaseException:
+        #     print('    >打开网页失败，重新尝试...')
+        #     continue
+        # rqs.encoding = 'utf-8'
+        # rqs_content = rqs.text
+        # 打开网页
+        user_agent, cookie, origin, rqs_content = pw_cloudflare_trigger_turnstile_page(
+            url, clearCookies=False)
+        # pw_cloudflare_verify_human("#AOzYg6")  # 登录表单页的人机验证按钮
+        # sleep(5)
         # print(rqs_content)
         if search(r'JAVLibrary', rqs_content):  # 得到想要的网页，直接返回
             return rqs_content, header
@@ -226,7 +249,7 @@ def get_bus_html(url, proxy, Cookie):
 
 
 # 去javbus搜寻系列
-def find_series_cover_bus(jav_num, url_bus, proxy_bus):
+def find_series_cover_bus(jav_num, url_bus, proxy_bus, Cookie):
     # 需要这两个东西
     series = url_cover_bus = ''
     status_series = 0
@@ -234,7 +257,7 @@ def find_series_cover_bus(jav_num, url_bus, proxy_bus):
     url_on_bus = url_bus + jav_num
     print('    >获取系列：', url_on_bus)
     # 获得影片在javbus上的网页
-    html_bus = get_bus_html(url_on_bus, proxy_bus)
+    html_bus = get_bus_html(url_on_bus, proxy_bus, Cookie)
     if not search(r'404 Page', html_bus):
         # DVD封面cover
         coverg = search(r'bigImage" href="(.+?)">', html_bus)
@@ -247,9 +270,9 @@ def find_series_cover_bus(jav_num, url_bus, proxy_bus):
     else:
         # 还是老老实实去搜索
         url_search_bus = url_bus + 'search/' + \
-            jav_num.replace('-', '') + '&type=1&parent=ce'
+                         jav_num.replace('-', '') + '&type=1&parent=ce'
         print('    >搜索javbus：', url_search_bus)
-        html_bus = get_bus_html(url_search_bus, proxy_bus)
+        html_bus = get_bus_html(url_search_bus, proxy_bus, Cookie)
         # 搜索结果的网页，大部分情况一个结果，也有可能是多个结果的网页
         # 尝试找movie-box
         list_search_results = findall(
@@ -277,7 +300,7 @@ def find_series_cover_bus(jav_num, url_bus, proxy_bus):
                 # 默认用第一个搜索结果
                 url_first_result = list_fit_results[0]
                 print('    >获取系列：', url_first_result)
-                html_bus = get_bus_html(url_first_result, proxy_bus)
+                html_bus = get_bus_html(url_first_result, proxy_bus, Cookie)
                 # DVD封面cover
                 coverg = search(r'bigImage" href="(.+?)">', html_bus)
                 if str(coverg) != 'None':
@@ -469,6 +492,8 @@ def run_browser_with_cdp(
     :param browser_path: Chromium 浏览器的可执行文件路径
     :return: 返回进程对象方便后续管理
     """
+    # 尝试关闭所有正在运行的 Chromium 浏览器进程
+    Popen(["taskkill", "/F", "/IM", browser_path], shell=True)
     command = [
         browser_path,  # Chromium 浏览器的可执行文件路径
         "--remote-debugging-port=9222",  # 设置 CDP 协议使用的端口
@@ -487,3 +512,56 @@ def run_browser_with_cdp(
         shell=True,
         stdout=DEVNULL,
         stderr=DEVNULL)  # 返回进程对象方便后续管理
+
+# 打开网页获取cookies
+def pw_cloudflare_trigger_turnstile_page(
+        url: str, endpoint_url="http://localhost:9222", clearCookies=True):
+    """
+    此函数用于在 Chromium 浏览器中打开需要 Cloudflare 人机验证的页面
+    :param url: 需要 Cloudflare 人机验证的页面 URL 地址
+    :param endpoint_url: 开启 CDP 协议的 Chromium 浏览器地址和端口
+    :return: None
+    """
+
+    with sync_playwright() as p:  # 创建 Playwright 上下文管理器
+        browser = p.chromium.connect_over_cdp(
+            endpoint_url)  # 使用 CDP 协议连接到 Chromium 浏览器
+        context = browser.contexts[0]  # 获取浏览器中的第一个上下文
+        page = context.pages[0]  # 获取上下文中的第一个页面
+
+        if clearCookies:
+            context.clear_cookies()  # 清除所有 Cookie 以便调试
+        page.goto(url)  # 打开 URL 页面
+
+        # 获取User-Agent
+        user_agent = page.evaluate("() => navigator.userAgent")
+
+        # 获取页面内容
+        rqs_content = page.content()
+
+        return user_agent, context.cookies(page.url), page.url, rqs_content
+        # 'priority': "u=1, i",
+        # ":path": "/cdn-cgi/challenge-platform/h/g/jsd/oneshot/ea2d291c0fdc/0.6067935104803159:1772212279:4aNvNHT_gNUPY9quaeKi-nDxcv_v8Z3vD5k85IAuf5U/9d4973addcc93023"
+
+
+# 鼠标点击
+def pw_cloudflare_verify_human(
+        css_selector: str,
+        endpoint_url="http://localhost:9222",
+        delay=5):
+    sleep(delay)  # 延时启动，目的是等待 Cloudflare 元素加载完成
+    with sync_playwright() as p:  # 创建 Playwright 上下文管理器
+        browser = p.chromium.connect_over_cdp(
+            endpoint_url)  # 使用 CDP 协议连接到 Chromium 浏览器
+        context = browser.contexts[0]  # 获取浏览器中的第一个上下文
+        page = context.pages[0]  # 获取上下文中的第一个页面
+
+        cf_div_bounding_box = page.locator(
+            css_selector).bounding_box()  # 使用 CSS 选择器定位元素
+        x = cf_div_bounding_box['x']  # 元素边界左上角的 X 坐标
+        y = cf_div_bounding_box['y']  # 元素边界左上角的 Y 坐标
+        width = cf_div_bounding_box['width']  # 元素的宽度（该变量此处用不上）
+        height = cf_div_bounding_box['height']  # 元素的高度
+        offset_x = x + 75  # 以 X 为起点向右偏移 75 像素
+        offset_y = y + (height / 2)  # 以 Y 为起点向下偏移元素高度的一半（元素垂直中心）
+        page.mouse.click(offset_x, offset_y)  # 模拟执行鼠标点击操作
