@@ -6,3 +6,5 @@
 /javsdt/build/
 /javsdt/dist/
 /.idea
+*.pyc
+*.spec
